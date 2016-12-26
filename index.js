@@ -188,7 +188,7 @@ class Init {
     })
   }
   writePackage (json, pkgHome) {
-    let jsonString = JSON.stringify(json, null, ' ')
+    let jsonString = JSON.stringify(json, null, '  ')
     fs.writeFileSync(pkgHome, jsonString)
   }
   extend (json, extend) {
