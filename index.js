@@ -4,6 +4,7 @@ const path = require('path')
 const semafor = require('semafor')
 const inquirer = require('inquirer')
 const request = require('request')
+const pkgDir = require('pkg-dir')
 const childProcess = require('child_process')
 const spawn = childProcess.spawn
 
@@ -11,9 +12,13 @@ class Init {
   constructor () {
     this.home = osHomedir()
     this.logger = semafor()
+    this.pkgHome = path.join(pkgDir.sync(process.cwd()), 'package.json')
   }
   getHome () {
     return this.home
+  }
+  getPackageHome (cwd) {
+    return this.pkgHome
   }
   getConfigPath () {
     return path.join(this.getHome(), '.dev.package.json')
@@ -113,13 +118,20 @@ class Init {
       if (err) {
         return this.err(err)
       }
-      let config = JSON.parse(data)
+      let config = JSON.parse(data + '')
       this.logger.log('.dev.package.json:')
       this.logger.log(`Remote: ${config.config_path}`)
       this.logger.log(`Modules:`)
       for (let i in config.modules) {
         let module = config.modules[i]
-        this.logger.log(`\t* ${module}`)
+        this.logger.log(`\t* ${module.module}`)
+        if (module.tasks !== undefined) {
+          this.logger.log('\tTasks:')
+          for (let t in module.tasks) {
+            let task = module.tasks[t]
+            this.logger.log(`\t\t* ${t} - ${task}`)
+          }
+        }
       }
     })
   }
@@ -151,8 +163,10 @@ class Init {
       process.exit(0)
     }
     let module = modules.shift()
-    this.logger.log(`Installing module: ${module}`)
-    let child = spawn('npm', ['install', '--save-dev', module])
+    let tasks = module.tasks
+    let pkgHome = this.getPackageHome()
+    this.logger.log(`Installing module: ${module.module}`)
+    let child = spawn('npm', ['install', '--save-dev', module.module])
     child.stdout.on('data', function (data) {
       obj.logger.log(' ' + data)
     })
@@ -160,8 +174,25 @@ class Init {
       obj.logger.warn('' + data)
     })
     child.on('close', function (code) {
+      if (tasks !== undefined) {
+        let json = require(pkgHome)
+        json = obj.addTasks(json, tasks)
+        let jsonString = JSON.stringify(json, null, ' ')
+        fs.writeFileSync(pkgHome, jsonString)
+      }
       obj.installModule(modules)
     })
+  }
+  addTasks (json, tasks) {
+    json['scripts'] = json['scripts'] || {}
+    for (let key in tasks) {
+      if (json['scripts'][key] === undefined) {
+        json['scripts'][key] = tasks[key]
+      } else {
+        json['scripts'][key] = json['scripts'][key] + ' && ' + tasks[key]
+      }
+    }
+    return json
   }
   err (msg) {
     this.logger.fail(msg)
