@@ -6,6 +6,8 @@ if (argv.info) {
   cli.showConfig()
 } else if (argv.config) {
   cli.createConfig()
-} else {
+} else if (argv.install) {
   cli.install()
+} else {
+  cli.help()
 }
