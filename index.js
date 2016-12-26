@@ -165,6 +165,8 @@ class Init {
     let module = modules.shift()
     let tasks = module.tasks
     let pkgHome = this.getPackageHome()
+    let extend = module.extend
+    let json = require(pkgHome)
     this.logger.log(`Installing module: ${module.module}`)
     let child = spawn('npm', ['install', '--save-dev', module.module])
     child.stdout.on('data', function (data) {
@@ -175,13 +177,22 @@ class Init {
     })
     child.on('close', function (code) {
       if (tasks !== undefined) {
-        let json = require(pkgHome)
         json = obj.addTasks(json, tasks)
-        let jsonString = JSON.stringify(json, null, ' ')
-        fs.writeFileSync(pkgHome, jsonString)
+        obj.writePackage(json, pkgHome)
+      }
+      if (extend !== undefined) {
+        json = obj.extend(json, extend)
+        obj.writePackage(json, pkgHome)
       }
       obj.installModule(modules)
     })
+  }
+  writePackage (json, pkgHome) {
+    let jsonString = JSON.stringify(json, null, ' ')
+    fs.writeFileSync(pkgHome, jsonString)
+  }
+  extend (json, extend) {
+    return Object.assign(json, extend)
   }
   addTasks (json, tasks) {
     json['scripts'] = json['scripts'] || {}
