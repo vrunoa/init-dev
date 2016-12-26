@@ -119,19 +119,25 @@ class Init {
         return this.err(err)
       }
       let config = JSON.parse(data + '')
-      this.logger.log('.dev.package.json:')
       this.logger.log(`Remote: ${config.config_path}`)
-      this.logger.log(`Modules:`)
+      this.logger.log(`\nModules:`)
+      const spaces = '  '
       for (let i in config.modules) {
         let module = config.modules[i]
-        this.logger.log(`\t* ${module.module}`)
+        this.logger.log(`|_ ${module.module}`)
         if (module.tasks !== undefined) {
-          this.logger.log('\tTasks:')
+          this.logger.log(`${spaces}|_ Tasks:`)
           for (let t in module.tasks) {
             let task = module.tasks[t]
-            this.logger.log(`\t\t* ${t} - ${task}`)
+            this.logger.log(`${spaces}${spaces}|_ ${t} - ${task}`)
           }
         }
+        if (module.extend !== undefined) {
+          this.logger.log(`${spaces}|_ Extend:`)
+          let extendString = JSON.stringify(module.extend)
+          this.logger.log(`${spaces}${spaces}${extendString}`)
+        }
+        this.logger.log(`\n`)
       }
     })
   }
