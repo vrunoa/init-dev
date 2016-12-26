@@ -6,7 +6,12 @@
   "scripts": {
     "prestart": "standard",
     "start": "./cli.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "precommit": "standard",
+    "prepush": "standard"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "initDev": "./cli.js"
   },
   "repository": {
     "type": "git",
