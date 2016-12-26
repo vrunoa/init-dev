@@ -12,13 +12,18 @@ class Init {
   constructor () {
     this.home = osHomedir()
     this.logger = semafor()
-    this.pkgHome = path.join(pkgDir.sync(process.cwd()), 'package.json')
+    this.pkgEnv = path.join(pkgDir.sync(process.cwd()), 'package.json')
+    this.pkgHome = path.join(pkgDir.sync(__dirname), 'package.json')
+  }
+  showVersion () {
+    let json = require(this.pkgHome)
+    this.logger.log(json['version'])
   }
   getHome () {
     return this.home
   }
   getPackageHome (cwd) {
-    return this.pkgHome
+    return this.pkgEnv
   }
   getConfigPath () {
     return path.join(this.getHome(), '.dev.package.json')
@@ -170,9 +175,9 @@ class Init {
     }
     let module = modules.shift()
     let tasks = module.tasks
-    let pkgHome = this.getPackageHome()
+    let pkgEnv = this.getPackageHome()
     let extend = module.extend
-    let json = require(pkgHome)
+    let json = require(pkgEnv)
     this.logger.log(`Installing module: ${module.module}`)
     let child = spawn('npm', ['install', '--save-dev', module.module])
     child.stdout.on('data', function (data) {
@@ -184,18 +189,18 @@ class Init {
     child.on('close', function (code) {
       if (tasks !== undefined) {
         json = obj.addTasks(json, tasks)
-        obj.writePackage(json, pkgHome)
+        obj.writePackage(json, pkgEnv)
       }
       if (extend !== undefined) {
         json = obj.extend(json, extend)
-        obj.writePackage(json, pkgHome)
+        obj.writePackage(json, pkgEnv)
       }
       obj.installModule(modules)
     })
   }
-  writePackage (json, pkgHome) {
+  writePackage (json, pkgEnv) {
     let jsonString = JSON.stringify(json, null, '  ')
-    fs.writeFileSync(pkgHome, jsonString)
+    fs.writeFileSync(pkgEnv, jsonString)
   }
   extend (json, extend) {
     return Object.assign(json, extend)
@@ -216,7 +221,7 @@ class Init {
     process.exit(0)
   }
   help () {
-    this.logger.log('Usage: initDev [--config | --info | --install]')
+    this.logger.log('Usage: initDev [--config | --info | --install | --version]')
   }
 }
 
