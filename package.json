@@ -4,8 +4,8 @@
   "description": "A module to install dev modules on every new project",
   "main": "cli.js",
   "scripts": {
-    "prestart": "standard",
     "start": "./cli.js",
+    "prestart": "standard",
     "precommit": "standard",
     "prepush": "standard"
   },
@@ -33,6 +33,7 @@
     "inquirer": "^2.0.0",
     "minimist": "^1.2.0",
     "os-homedir": "^1.0.2",
+    "pkg-dir": "^1.0.0",
     "request": "^2.79.0",
     "semafor": "0.0.1"
   },
