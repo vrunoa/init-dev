@@ -129,18 +129,18 @@ class Init {
       const spaces = '  '
       for (let i in config.modules) {
         let module = config.modules[i]
-        this.logger.log(`|_ ${module.module}`)
+        this.logger.log(`└─ ${module.module}`)
         if (module.tasks !== undefined) {
-          this.logger.log(`${spaces}|_ Tasks:`)
+          this.logger.log(`${spaces}${spaces}└─ Tasks:`)
           for (let t in module.tasks) {
             let task = module.tasks[t]
-            this.logger.log(`${spaces}${spaces}|_ ${t} - ${task}`)
+            this.logger.log(`${spaces}${spaces}${spaces}└─ ${t} - ${task}`)
           }
         }
         if (module.extend !== undefined) {
-          this.logger.log(`${spaces}|_ Extend:`)
+          this.logger.log(`${spaces}${spaces}└─ Extend:`)
           let extendString = JSON.stringify(module.extend)
-          this.logger.log(`${spaces}${spaces}${extendString}`)
+          this.logger.log(`${spaces}${spaces}${spaces}${extendString}`)
         }
         this.logger.log(`\n`)
       }
