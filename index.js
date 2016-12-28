@@ -12,7 +12,8 @@ class Init {
   constructor () {
     this.home = osHomedir()
     this.logger = semafor()
-    this.pkgEnv = path.join(pkgDir.sync(process.cwd()), 'package.json')
+    this.homeEnv = pkgDir.sync(process.cwd())
+    this.pkgEnv = path.join(this.homeEnv, 'package.json')
     this.pkgHome = path.join(pkgDir.sync(__dirname), 'package.json')
   }
   showVersion () {
@@ -178,7 +179,7 @@ class Init {
     let pkgEnv = this.getPackageHome()
     let extend = module.extend
     this.logger.log(`Installing module: ${module.module}`)
-    let child = spawn('npm', ['install', '--save-dev', module.module])
+    let child = spawn('npm', ['install', '--prefix', obj.homeEnv, '--save-dev', module.module])
     child.stdout.on('data', function (data) {
       obj.logger.log(' ' + data)
     })
@@ -201,6 +202,7 @@ class Init {
   }
   writePackage (json, pkgEnv) {
     let jsonString = JSON.stringify(json, null, '  ')
+    console.log(jsonString)
     fs.writeFileSync(pkgEnv, jsonString)
   }
   extend (json, extend) {
