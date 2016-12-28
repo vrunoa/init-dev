@@ -165,21 +165,41 @@ class Init {
       }
       let config = JSON.parse(data)
       this.logger.log('Installing dev modules, this may take a while!')
-      this.installModule(config.modules)
+      this.installModule(config.modules, config.modules)
     })
   }
-  installModule (modules) {
-    let obj = this
+  addExtras (modules) {
     if (modules.length === 0) {
-      this.logger.ok('Dev modules installed')
+      this.logger.ok('Done!')
       process.exit(0)
     }
     let module = modules.shift()
     let tasks = module.tasks
     let pkgEnv = this.getPackageHome()
     let extend = module.extend
+    if (tasks !== undefined) {
+      let json = require(pkgEnv)
+      json = this.addTasks(json, tasks)
+      this.writePackage(json, pkgEnv)
+    }
+    if (extend !== undefined) {
+      let json = require(pkgEnv)
+      json = this.extend(json, extend)
+      this.writePackage(json, pkgEnv)
+    }
+    this.addExtras(modules)
+  }
+  installModule (all, modules) {
+    if (modules.length === 0) {
+      this.logger.ok('Dev modules installed')
+      this.logger.ok('Adding tasks & extend to package.json')
+      this.addExtras(all)
+      return
+    }
+    let module = modules.shift()
     this.logger.log(`Installing module: ${module.module}`)
-    let child = spawn('npm', ['install', '--prefix', obj.homeEnv, '--save-dev', module.module])
+    let child = spawn('npm', ['install', '--prefix', this.homeEnv, '--save-dev', module.module])
+    let obj = this
     child.stdout.on('data', function (data) {
       obj.logger.log(' ' + data)
     })
@@ -187,17 +207,7 @@ class Init {
       obj.logger.warn('' + data)
     })
     child.on('close', function (code) {
-      if (tasks !== undefined) {
-        let json = require(pkgEnv)
-        json = obj.addTasks(json, tasks)
-        obj.writePackage(json, pkgEnv)
-      }
-      if (extend !== undefined) {
-        let json = require(pkgEnv)
-        json = obj.extend(json, extend)
-        obj.writePackage(json, pkgEnv)
-      }
-      obj.installModule(modules)
+      obj.installModule(all, modules)
     })
   }
   writePackage (json, pkgEnv) {
