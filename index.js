@@ -165,8 +165,11 @@ class Init {
       }
       let config = JSON.parse(data)
       this.logger.log('Installing dev modules, this may take a while!')
-      this.installModule(config.modules, config.modules)
+      this.installModule(config.modules, this.clone(config.modules))
     })
+  }
+  clone (obj) {
+    return JSON.parse(JSON.stringify(obj))
   }
   addExtras (modules) {
     if (modules.length === 0) {
