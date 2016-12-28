@@ -177,7 +177,6 @@ class Init {
     let tasks = module.tasks
     let pkgEnv = this.getPackageHome()
     let extend = module.extend
-    let json = require(pkgEnv)
     this.logger.log(`Installing module: ${module.module}`)
     let child = spawn('npm', ['install', '--save-dev', module.module])
     child.stdout.on('data', function (data) {
@@ -188,10 +187,12 @@ class Init {
     })
     child.on('close', function (code) {
       if (tasks !== undefined) {
+        let json = require(pkgEnv)
         json = obj.addTasks(json, tasks)
         obj.writePackage(json, pkgEnv)
       }
       if (extend !== undefined) {
+        let json = require(pkgEnv)
         json = obj.extend(json, extend)
         obj.writePackage(json, pkgEnv)
       }
